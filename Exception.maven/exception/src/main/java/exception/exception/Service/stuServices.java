@@ -1,5 +1,6 @@
 package exception.exception.Service;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -7,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import exception.exception.Mapper.mapper;
 import exception.exception.model.Student;
 import exception.exception.repository.studentinterface;
+import exception.exception.utility.Userdto;
 
 @Service
 public class stuServices {
@@ -17,13 +20,31 @@ public class stuServices {
 @Autowired
 private studentinterface studentrepo;
 
-public ResponseEntity<List<Student>> getdata() {
-          return   ResponseEntity.ok(studentrepo.findAll());
+@Autowired
+private mapper mp;
+public ResponseEntity<ResponseEntity<Userdto>> getdata() {
+
+     
+
+ResponseEntity<Userdto> std=ResponseEntity.ok(mp.toUserdto((Student) studentrepo.findAll()));
+
+
+return ResponseEntity.ok(std);
 }
 
-public ResponseEntity<Student> saveStudent(Student student) {
+public ResponseEntity<Userdto> saveStudent(Userdto student) 
+{
 
-    return ResponseEntity.ok(studentrepo.save(student));
+    
+    //  convert   userdto to student entity
+    Student std=mp.toStudent(student);
+
+    Student saveStudent= studentrepo.save(std);
+
+    Userdto  dto=mp.toUserdto(saveStudent);
+
+    return ResponseEntity.ok(dto);
+    //return ResponseEntity.ok(studentrepo.save(student));
 }
 
 public boolean deletedata(Long id) {
@@ -37,14 +58,18 @@ public boolean deletedata(Long id) {
             }
 
            }
-           public ResponseEntity<Student> updateStudent(Long id ,Student student) {
+           public ResponseEntity<?> updateStudent(Long id ,Student student){
             if (studentrepo.existsById(id))
             {
                 student.setID(id);
               
-                return ResponseEntity.ok(studentrepo.save(student));
+                studentrepo.save(student);
+                return ResponseEntity.ok(studentrepo.findById(id).orElse(null));
             }
-           return null;
+            else 
+             {
+               throw new IllegalArgumentException("Negative age not allowed!");
+             }
 
            }
            
@@ -70,10 +95,18 @@ public boolean deletedata(Long id) {
         return  null;
            
 
+        
+
 
 
 
 }
+ public int divide(int a, int b) {
+        if (b == 0) {
+            throw new IllegalArgumentException("Division by zero is not allowed!");
+        }
+        return a / b;
+    }
 }
 
 
